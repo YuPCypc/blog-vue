@@ -1,0 +1,36 @@
+/* src/assets/styles.css */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f2f5;
+}
+
+.el-header {
+    background-color: #fff;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    padding: 10px 50px;
+}
+
+.logo {
+    height: 40px;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.el-main {
+    padding: 20px 50px;
+}
+
+.post-card {
+    margin-bottom: 20px;
+    border: 1px solid #e4e4e4;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.el-list-item {
+    margin-bottom: 10px;
+}
