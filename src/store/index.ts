@@ -1,5 +1,16 @@
 import { createStore } from 'vuex'
 
+export interface UserState {
+    isAuthenticated: boolean
+    user: {
+        avatar: string
+        email: string
+        phone: string
+        name: string
+        bio: string
+    } | null
+}
+
 interface Post {
     id: number;
     title: string;
@@ -8,11 +19,21 @@ interface Post {
 
 interface State {
     posts: Post[];
+    isAuthenticated: boolean;
+    user: UserState['user'] | null;
 }
 
 export default createStore<State>({
     state: {
-        posts: []
+        posts: [],
+        isAuthenticated: false,
+        user: {
+            avatar: 'default_user.png',
+            email: 'example@example.com',
+            phone: '1234567890',
+            name: 'User Name',
+            bio: 'User bio'
+        }
     },
     mutations: {
         setPosts(state, posts: Post[]) {
@@ -20,6 +41,17 @@ export default createStore<State>({
         },
         addPost(state, post: Post) {
             state.posts.push(post)
+        },
+        login(state, user) {
+            state.isAuthenticated = true
+            state.user = user
+        },
+        logout(state) {
+            state.isAuthenticated = false
+            state.user = null
+        },
+        updateUser(state, user) {
+            state.user = user
         }
     },
     actions: {
@@ -34,8 +66,16 @@ export default createStore<State>({
         createPost({ commit }, post: Post) {
             // 模拟创建新帖子
             commit('addPost', post)
+        },
+        login({ commit }, user) {
+            commit('login', user)
+        },
+        logout({ commit }) {
+            commit('logout')
+        },
+        updateUser({ commit }, user) {
+            commit('updateUser', user)
         }
     },
     modules: {}
 })
-

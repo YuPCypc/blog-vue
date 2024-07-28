@@ -1,19 +1,6 @@
 <template>
   <div>
-    <el-header>
-      <el-row>
-        <el-col :span="4">
-          <img src="@/assets/logo.svg" alt="Logo" class="logo">
-        </el-col>
-        <el-col :span="16">
-          <el-input placeholder="Search..." prefix-icon="el-icon-search"></el-input>
-        </el-col>
-        <el-col :span="4" class="align-right">
-          <el-button type="primary">Login</el-button>
-          <el-button>Sign Up</el-button>
-        </el-col>
-      </el-row>
-    </el-header>
+    <Navbar />
     <el-main>
       <el-row :gutter="20">
         <el-col :span="6">
@@ -50,46 +37,44 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
+import Navbar from '@/components/Navbar.vue'
 
 export default defineComponent({
   name: 'Home',
-  data() {
+  components: {
+    Navbar
+  },
+  setup() {
+    const router = useRouter()
+
+    const hotTopics = [
+      { id: 1, title: 'Vue 3 Tips' },
+      { id: 2, title: 'JavaScript Best Practices' },
+      { id: 3, title: 'CSS Grid Layout' }
+    ]
+    const posts = [
+      { id: 1, title: 'Post 1', content: 'This is the content of post 1' },
+      { id: 2, title: 'Post 2', content: 'This is the content of post 2' },
+      { id: 3, title: 'Post 3', content: 'This is the content of post 3' }
+    ]
+    const recommendedUsers = [
+      { id: 1, name: 'User 1' },
+      { id: 2, name: 'User 2' },
+      { id: 3, name: 'User 3' }
+    ]
+
     return {
-      hotTopics: [
-        { id: 1, title: 'Vue 3 Tips' },
-        { id: 2, title: 'JavaScript Best Practices' },
-        { id: 3, title: 'CSS Grid Layout' },
-        { id: 4, title: 'CSS Grid Layout' },
-        { id: 5, title: 'CSS Grid Layout' }
-      ],
-      posts: [
-        { id: 1, title: 'Post 1', content: 'This is the content of post 1' },
-        { id: 2, title: 'Post 2', content: 'This is the content of post 2' },
-        { id: 3, title: 'Post 3', content: 'This is the content of post 3' },
-        { id: 4, title: 'Post 3', content: 'This is the content of post 3' },
-        { id: 5, title: 'Post 3', content: 'This is the content of post 3' }
-      ],
-      recommendedUsers: [
-        { id: 1, name: 'User 1' },
-        { id: 2, name: 'User 2' },
-        { id: 3, name: 'User 3' },
-        { id: 4, name: 'User 3' },
-        { id: 5, name: 'User 3' }
-      ]
+      hotTopics,
+      posts,
+      recommendedUsers
     }
   }
 })
 </script>
 
 <style scoped>
-.logo {
-  height: 50px;
-}
-.align-right {
-  text-align: right;
-}
 .post-card {
   margin-bottom: 20px;
 }
 </style>
-

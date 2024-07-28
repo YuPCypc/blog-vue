@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <router-view />
   </div>
 </template>
 
@@ -11,3 +11,9 @@ export default defineComponent({
   name: 'App'
 })
 </script>
+
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+}
+</style>
