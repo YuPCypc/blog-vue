@@ -3,7 +3,7 @@
     <el-header>
       <el-row>
         <el-col :span="4">
-          <img src="@/assets/logo.svg" alt="Logo" class="logo">
+          <img src="@/assets/logo.svg" alt="Logo" class="logo" @click="navigateToHome" >
         </el-col>
       </el-row>
     </el-header>
@@ -97,12 +97,17 @@ export default defineComponent({
       this.$message.success('已退出')
     }
 
+    const navigateToHome = () => {
+      router.push({ name: 'Home' })
+    }
+
     return {
       userForm,
       handleAvatarSuccess,
       beforeAvatarUpload,
       saveChanges,
-      logout
+      logout,
+      navigateToHome
     }
   }
 })
@@ -115,6 +120,11 @@ export default defineComponent({
 .align-right {
   text-align: right;
 }
+.logo:hover {
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
 .user-form {
   max-width: 600px;
   margin: 0 auto;

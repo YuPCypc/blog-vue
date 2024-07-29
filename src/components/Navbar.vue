@@ -2,7 +2,7 @@
   <el-header>
     <el-row>
       <el-col :span="4">
-        <img src="@/assets/logo.svg" alt="Logo" class="logo">
+        <img src="@/assets/logo.svg" alt="Logo" class="logo" @click="navigateToHome">
       </el-col>
       <el-col :span="12">
         <el-input placeholder="Search..." prefix-icon="el-icon-search"></el-input>
@@ -13,16 +13,17 @@
       <el-col :span="4" class="align-right">
         <el-button v-if="!isAuthenticated" type="primary" @click="navigateToLogin">登陆</el-button>
         <el-button v-if="!isAuthenticated" @click="navigateToRegister">注册</el-button>
-        <el-avatar v-if="isAuthenticated" :src="user?.avatar" class="clickable-avatar" @click="navigateToProfile"></el-avatar>
+        <el-avatar v-if="isAuthenticated" :src="user?.avatar" class="clickable-avatar"
+                   @click="navigateToProfile"></el-avatar>
       </el-col>
     </el-row>
   </el-header>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
-import { useStore } from 'vuex'
-import { useRouter } from 'vue-router'
+import {defineComponent, computed} from 'vue'
+import {useStore} from 'vuex'
+import {useRouter} from 'vue-router'
 
 export default defineComponent({
   name: 'Navbar',
@@ -34,15 +35,19 @@ export default defineComponent({
     const user = computed(() => store.state.user)
 
     const navigateToLogin = () => {
-      router.push({ name: 'Login' })
+      router.push({name: 'Login'})
     }
 
     const navigateToRegister = () => {
-      router.push({ name: 'Register' })
+      router.push({name: 'Register'})
     }
 
     const navigateToProfile = () => {
-      router.push({ name: 'Profile' })
+      router.push({name: 'Profile'})
+    }
+
+    const navigateToHome = () => {
+      router.push({name: 'Home'})
     }
 
     return {
@@ -50,7 +55,8 @@ export default defineComponent({
       user,
       navigateToLogin,
       navigateToRegister,
-      navigateToProfile
+      navigateToProfile,
+      navigateToHome
     }
   }
 })
@@ -60,10 +66,17 @@ export default defineComponent({
 .logo {
   height: 50px;
 }
+
 .align-right {
   text-align: right;
 }
+
 .clickable-avatar {
+  cursor: pointer;
+}
+
+.logo:hover {
+  transform: scale(1.1);
   cursor: pointer;
 }
 </style>

@@ -1,3 +1,4 @@
+<!-- Login.vue -->
 <template>
   <div class="login-container">
     <ThreeBackground />
@@ -11,6 +12,10 @@
           <el-input v-model="password" type="password" placeholder="Password"></el-input>
         </el-form-item>
         <el-form-item>
+          <el-input v-model="captchaInput" placeholder="Enter Captcha" class="captcha-input"></el-input>
+          <Captcha class="captcha-image" @updateCaptcha="updateCaptcha" />
+        </el-form-item>
+        <el-form-item>
           <el-button type="primary" native-type="submit">Login</el-button>
         </el-form-item>
       </el-form>
@@ -19,40 +24,62 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import { useStore } from 'vuex'
-import { useRouter } from 'vue-router'
-import ThreeBackground from '@/components/ThreeBackground.vue'
-import defaultUserAvatar from '@/assets/default_user.png'
+import { defineComponent, ref } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+import ThreeBackground from '@/components/ThreeBackground.vue';
+import defaultUserAvatar from '@/assets/default_user.png';
+import Captcha from '@/components/Captcha.vue';
+import axios from '@/axios'; // 引入配置好的 axios 实例
 
 export default defineComponent({
   name: 'Login',
   components: {
+    Captcha,
     ThreeBackground
   },
   setup() {
-    const store = useStore()
-    const router = useRouter()
-    const username = ref('')
-    const password = ref('')
+    const store = useStore();
+    const router = useRouter();
+    const username = ref('');
+    const password = ref('');
+    const captchaInput = ref('');
+    const captchaCode = ref('');  // 保存当前的验证码
 
-    const handleSubmit = () => {
-      // TODO: 添加实际的用户名密码验证逻辑
-      const user = {
-        name: username.value,
-        avatar: defaultUserAvatar // 替换为实际头像链接
+    const updateCaptcha = (newCaptcha: string) => {
+      captchaCode.value = newCaptcha;
+    };
+
+    const handleSubmit = async () => {
+      // 调用验证码验证接口
+      try {
+        const response = await axios.post('/captcha/verify', { captcha: captchaInput.value });
+        if (response.data) {
+          // 验证码验证成功，继续执行登录逻辑
+          const user = {
+            name: username.value,
+            avatar: defaultUserAvatar // 替换为实际头像链接
+          };
+          store.dispatch('login', user);
+          router.push('/'); // 跳转回首页
+        } else {
+          alert('验证码错误');
+        }
+      } catch (error) {
+        console.error('验证码验证失败:', error);
+        alert('验证码验证失败');
       }
-      store.dispatch('login', user)
-      router.push('/') // 跳转回首页
-    }
+    };
 
     return {
       username,
       password,
-      handleSubmit
-    }
+      captchaInput,
+      handleSubmit,
+      updateCaptcha
+    };
   }
-})
+});
 </script>
 
 <style scoped>
@@ -66,5 +93,12 @@ export default defineComponent({
 .login-card {
   width: 400px;
   padding: 20px;
+}
+.captcha-input{
+  width: 260px;
+  margin-right: 10px;
+}
+.captcha-image{
+  position: relative;
 }
 </style>

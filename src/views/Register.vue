@@ -27,6 +27,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import ThreeBackground from '@/components/ThreeBackground.vue'
+import {useRouter} from "vue-router";
 
 export default defineComponent({
   name: 'Register',
@@ -34,6 +35,7 @@ export default defineComponent({
     ThreeBackground
   },
   setup() {
+    const router = useRouter()
     const username = ref('')
     const email = ref('')
     const password = ref('')
@@ -48,6 +50,8 @@ export default defineComponent({
       console.log('Email:', email.value)
       console.log('Password:', password.value)
       // 在这里处理注册逻辑
+
+      router.push('/') // 跳转回首页
     }
 
     return {
