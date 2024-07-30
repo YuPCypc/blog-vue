@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import axios from '@/axios';
 
 export default defineComponent({
@@ -18,7 +18,7 @@ export default defineComponent({
 
     const getCaptcha = async () => {
       try {
-        const response = await axios.get('/captcha/generate');
+        const response = await axios.get('/auth/captcha/generate');
         captchaImage.value = response.data.image;
         captchaCode.value = response.data.captcha; // 假设服务器返回了验证码文本
         emit('updateCaptcha', captchaCode.value);

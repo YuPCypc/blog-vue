@@ -1,81 +1,67 @@
-import { createStore } from 'vuex'
+// store/index.js
+import { createStore } from 'vuex';
+import axios from '@/axios';
 
-export interface UserState {
-    isAuthenticated: boolean
-    user: {
-        avatar: string
-        email: string
-        phone: string
-        name: string
-        bio: string
-    } | null
-}
-
-interface Post {
-    id: number;
-    title: string;
-    content: string;
-}
-
-interface State {
-    posts: Post[];
-    isAuthenticated: boolean;
-    user: UserState['user'] | null;
-}
-
-export default createStore<State>({
+export default createStore({
     state: {
-        posts: [],
+        user: null,
         isAuthenticated: false,
-        user: {
-            avatar: 'default_user.png',
-            email: 'example@example.com',
-            phone: '1234567890',
-            name: 'User Name',
-            bio: 'User bio'
-        }
     },
     mutations: {
-        setPosts(state, posts: Post[]) {
-            state.posts = posts
+        setUser(state, user) {
+            state.user = user;
+            state.isAuthenticated = true;
         },
-        addPost(state, post: Post) {
-            state.posts.push(post)
+        clearUser(state) {
+            state.user = null;
+            state.isAuthenticated = false;
         },
-        login(state, user) {
-            state.isAuthenticated = true
-            state.user = user
+        updateUser(state, updatedUser) {
+            state.user = { ...state.user, ...updatedUser };
         },
         logout(state) {
-            state.isAuthenticated = false
-            state.user = null
+            state.user = null;
+            state.isAuthenticated = false;
         },
-        updateUser(state, user) {
-            state.user = user
-        }
     },
     actions: {
-        fetchPosts({ commit }) {
-            // 模拟异步获取数据
-            const posts: Post[] = [
-                { id: 1, title: 'First Post', content: 'This is the first post.' },
-                { id: 2, title: 'Second Post', content: 'This is the second post.' }
-            ]
-            commit('setPosts', posts)
-        },
-        createPost({ commit }, post: Post) {
-            // 模拟创建新帖子
-            commit('addPost', post)
-        },
         login({ commit }, user) {
-            commit('login', user)
+            commit('setUser', user);
         },
         logout({ commit }) {
-            commit('logout')
+            commit('logout');
+            localStorage.removeItem('jwt'); // 清除 localStorage 中的 JWT 令牌
         },
-        updateUser({ commit }, user) {
-            commit('updateUser', user)
+        updateUser({ commit }, updatedUser) {
+            commit('updateUser', updatedUser);
+        },
+        async initializeStore({ commit }) {
+            const token = localStorage.getItem('jwt');
+            if (token) {
+                try {
+                    // 发送请求到后端，JWT 作为查询参数
+                    const response = await axios.get('/auth/verify-token', {
+                        params: {
+                            token: token
+                        }
+                    });
+                    if (response.data.success) {
+                        const user = { username: response.data.data.username };
+                        const newToken = response.data.data.token;
+                        localStorage.setItem('jwt', newToken);
+                        commit('setUser', user);
+                    } else {
+                        commit('clearUser');
+                        localStorage.removeItem('jwt');
+                    }
+                } catch (error) {
+                    console.error('Token verification failed:', error);
+                    commit('clearUser');
+                    localStorage.removeItem('jwt');
+                }
+            }
         }
+
     },
-    modules: {}
-})
+});
+

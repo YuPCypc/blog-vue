@@ -7,7 +7,7 @@
       <el-col :span="12">
         <el-input placeholder="Search..." prefix-icon="el-icon-search"></el-input>
       </el-col>
-      <el-col :span="4" class="arrow-left">
+      <el-col :span="4">
         <el-button>搜索</el-button>
       </el-col>
       <el-col :span="4" class="align-right">
@@ -21,34 +21,34 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, computed} from 'vue'
-import {useStore} from 'vuex'
-import {useRouter} from 'vue-router'
+import { defineComponent, computed } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'Navbar',
   setup() {
-    const store = useStore()
-    const router = useRouter()
+    const store = useStore();
+    const router = useRouter();
 
-    const isAuthenticated = computed(() => store.state.isAuthenticated)
-    const user = computed(() => store.state.user)
+    const isAuthenticated = computed(() => store.state.isAuthenticated);
+    const user = computed(() => store.state.user);
 
     const navigateToLogin = () => {
-      router.push({name: 'Login'})
-    }
+      router.push({ name: 'Login' });
+    };
 
     const navigateToRegister = () => {
-      router.push({name: 'Register'})
-    }
+      router.push({ name: 'Register' });
+    };
 
     const navigateToProfile = () => {
-      router.push({name: 'Profile'})
-    }
+      router.push({ name: 'Profile' });
+    };
 
     const navigateToHome = () => {
-      router.push({name: 'Home'})
-    }
+      router.push({ name: 'Home' });
+    };
 
     return {
       isAuthenticated,
@@ -56,10 +56,10 @@ export default defineComponent({
       navigateToLogin,
       navigateToRegister,
       navigateToProfile,
-      navigateToHome
-    }
-  }
-})
+      navigateToHome,
+    };
+  },
+});
 </script>
 
 <style scoped>

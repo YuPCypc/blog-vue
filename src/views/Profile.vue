@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, reactive, getCurrentInstance } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
@@ -57,6 +57,7 @@ export default defineComponent({
   setup() {
     const store = useStore()
     const router = useRouter()
+    const { proxy } = getCurrentInstance()
     const user = store.state.user
 
     const userForm = reactive({
@@ -77,24 +78,24 @@ export default defineComponent({
       const isLt2M = file.size / 1024 / 1024 < 2
 
       if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+        proxy.$message.error('上传头像图片只能是 JPG 格式!')
       }
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        proxy.$message.error('上传头像图片大小不能超过 2MB!')
       }
       return isJPG && isLt2M
     }
 
     const saveChanges = () => {
-      // TODO: 保存修改后的用户信息
       store.commit('updateUser', userForm)
-      this.$message.success('用户信息已更新')
+      proxy.$message.success('用户信息已更新')
     }
 
     const logout = () => {
+      localStorage.removeItem('jwt');
       store.commit('logout')
       router.push({ name: 'Home' })
-      this.$message.success('已退出')
+      proxy.$message.success('已退出')
     }
 
     const navigateToHome = () => {

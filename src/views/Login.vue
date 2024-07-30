@@ -13,7 +13,7 @@
         </el-form-item>
         <el-form-item>
           <el-input v-model="captchaInput" placeholder="Enter Captcha" class="captcha-input"></el-input>
-          <Captcha class="captcha-image" @updateCaptcha="updateCaptcha" />
+          <Captcha ref="captchaComponent" class="captcha-image" @updateCaptcha="updateCaptcha" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" native-type="submit">Login</el-button>
@@ -46,6 +46,8 @@ export default defineComponent({
     const captchaInput = ref('');
     const captchaCode = ref('');  // 保存当前的验证码
 
+    const captchaComponent = ref(null); // 用于引用 Captcha 组件实例
+
     const updateCaptcha = (newCaptcha: string) => {
       captchaCode.value = newCaptcha;
     };
@@ -53,21 +55,34 @@ export default defineComponent({
     const handleSubmit = async () => {
       // 调用验证码验证接口
       try {
-        const response = await axios.post('/captcha/verify', { captcha: captchaInput.value });
-        if (response.data) {
+        const captchaResponse = await axios.post('/auth/captcha/verify', { captcha: captchaInput.value });
+        if (captchaResponse.data) {
           // 验证码验证成功，继续执行登录逻辑
-          const user = {
-            name: username.value,
-            avatar: defaultUserAvatar // 替换为实际头像链接
-          };
-          store.dispatch('login', user);
-          router.push('/'); // 跳转回首页
+          const loginResponse = await axios.post('/auth/login', { username: username.value, password: password.value });
+          if (loginResponse.data.success) {
+            const { user, token } = loginResponse.data.data;
+            // 存储 JWT token 到 localStorage
+            localStorage.setItem('jwt', token);
+            // 更新 Vuex 状态
+            store.dispatch('login', user);
+            router.push('/'); // 跳转回首页
+          } else {
+            alert('登录失败：' + loginResponse.data.message);
+          }
         } else {
           alert('验证码错误');
+          // 刷新验证码
+          if (captchaComponent.value) {
+            captchaComponent.value.getCaptcha();
+          }
         }
       } catch (error) {
         console.error('验证码验证失败:', error);
         alert('验证码验证失败');
+        // 刷新验证码
+        if (captchaComponent.value) {
+          captchaComponent.value.getCaptcha();
+        }
       }
     };
 
@@ -76,7 +91,8 @@ export default defineComponent({
       password,
       captchaInput,
       handleSubmit,
-      updateCaptcha
+      updateCaptcha,
+      captchaComponent // 将 Captcha 组件的引用暴露出去
     };
   }
 });
