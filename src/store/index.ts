@@ -9,7 +9,7 @@ export default createStore({
     },
     mutations: {
         setUser(state, user) {
-            state.user = user;
+            state.user = { ...state.user, ...user };
             state.isAuthenticated = true;
         },
         clearUser(state) {
@@ -32,8 +32,22 @@ export default createStore({
             commit('logout');
             localStorage.removeItem('jwt'); // 清除 localStorage 中的 JWT 令牌
         },
-        updateUser({ commit }, updatedUser) {
-            commit('updateUser', updatedUser);
+        async updateUser({ commit }, updatedUser) {
+            try {
+                console.log('Update user:', updatedUser);
+                const response = await axios.post('/update', updatedUser,{
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+                    }
+                });
+                console.log('Updatelasds user:', updatedUser);
+                commit('setUser', response.data.user);
+                if (response.data.success) {
+                    commit('updateUser', updatedUser);
+                }
+            } catch (error) {
+                console.error('Update user failed:', error);
+            }
         },
         async initializeStore({ commit }) {
             const token = localStorage.getItem('jwt');
@@ -46,7 +60,10 @@ export default createStore({
                         }
                     });
                     if (response.data.success) {
-                        const user = { username: response.data.data.username };
+                        const user = {
+                            username: response.data.data.username,
+                            avatarUri: response.data.data.avatar  // 添加 avatarUri
+                        };
                         const newToken = response.data.data.token;
                         localStorage.setItem('jwt', newToken);
                         commit('setUser', user);
@@ -61,7 +78,5 @@ export default createStore({
                 }
             }
         }
-
     },
 });
-

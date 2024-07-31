@@ -60,11 +60,11 @@ export default defineComponent({
           // 验证码验证成功，继续执行登录逻辑
           const loginResponse = await axios.post('/auth/login', { username: username.value, password: password.value });
           if (loginResponse.data.success) {
-            const { user, token } = loginResponse.data.data;
+            const { username,avatar, token } = loginResponse.data.data;
             // 存储 JWT token 到 localStorage
             localStorage.setItem('jwt', token);
             // 更新 Vuex 状态
-            store.dispatch('login', user);
+            store.dispatch('login', {username:username, avatarUri: avatar || defaultUserAvatar });
             router.push('/'); // 跳转回首页
           } else {
             alert('登录失败：' + loginResponse.data.message);

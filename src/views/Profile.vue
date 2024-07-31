@@ -3,7 +3,7 @@
     <el-header>
       <el-row>
         <el-col :span="4">
-          <img src="@/assets/logo.svg" alt="Logo" class="logo" @click="navigateToHome" >
+          <img src="@/assets/logo.svg" alt="Logo" class="logo" @click="navigateToHome">
         </el-col>
       </el-row>
     </el-header>
@@ -14,10 +14,14 @@
           <el-form-item label="头像">
             <el-upload
                 class="avatar-uploader"
-                action=""
+                action="http://localhost:8000/api/upload-avatar"
                 :show-file-list="false"
+                :before-upload="beforeAvatarUpload"
                 :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload">
+                :on-error="handleAvatarError"
+                :data="getFormData"
+                :headers="uploadHeaders"
+                :with-credentials="true">
               <img v-if="userForm.avatar" :src="userForm.avatar" class="avatar">
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
@@ -30,9 +34,6 @@
           </el-form-item>
           <el-form-item label="昵称">
             <el-input v-model="userForm.nickname"></el-input>
-          </el-form-item>
-          <el-form-item label="密码">
-            <el-input type="password" v-model="userForm.password"></el-input>
           </el-form-item>
           <el-form-item label="简介">
             <el-input type="textarea" v-model="userForm.bio"></el-input>
@@ -48,70 +49,88 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, getCurrentInstance } from 'vue'
-import { useStore } from 'vuex'
-import { useRouter } from 'vue-router'
+import { defineComponent, reactive, getCurrentInstance } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'Profile',
   setup() {
-    const store = useStore()
-    const router = useRouter()
-    const { proxy } = getCurrentInstance()
-    const user = store.state.user
+    const store = useStore();
+    const router = useRouter();
+    const { proxy } = getCurrentInstance();
+    const user = store.state.user;
 
     const userForm = reactive({
-      avatar: user?.avatar || '',
+      avatar: user?.avatarUri || '',
       email: user?.email || '',
       phone: user?.phone || '',
       nickname: user?.name || '',
-      password: '',
       bio: user?.bio || ''
-    })
-
-    const handleAvatarSuccess = (response: any, file: any) => {
-      userForm.avatar = URL.createObjectURL(file.raw)
-    }
+    });
 
     const beforeAvatarUpload = (file: File) => {
-      const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
+      const isJPG = file.type === 'image/jpeg';
+      const isLt2M = file.size / 1024 / 1024 < 2;
 
       if (!isJPG) {
-        proxy.$message.error('上传头像图片只能是 JPG 格式!')
+        proxy.$message.error('上传头像图片只能是 JPG 格式!');
       }
       if (!isLt2M) {
-        proxy.$message.error('上传头像图片大小不能超过 2MB!')
+        proxy.$message.error('上传头像图片大小不能超过 2MB!');
       }
-      return isJPG && isLt2M
-    }
+      return isJPG && isLt2M;
+    };
+
+    const handleAvatarSuccess = (response: any) => {
+      userForm.avatar = response.avatarUrl;
+      localStorage.setItem('jwt', response.token);
+      proxy.$message.success('头像上传成功');
+    };
+
+    const handleAvatarError = () => {
+      proxy.$message.error('头像上传失败');
+    };
+
+    const getFormData = (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return formData;
+    };
+
+    const uploadHeaders = {
+      'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+    };
 
     const saveChanges = () => {
-      store.commit('updateUser', userForm)
-      proxy.$message.success('用户信息已更新')
-    }
+      store.dispatch('updateUser', userForm);
+      proxy.$message.success('用户信息已更新');
+    };
 
     const logout = () => {
       localStorage.removeItem('jwt');
-      store.commit('logout')
-      router.push({ name: 'Home' })
-      proxy.$message.success('已退出')
-    }
+      store.commit('logout');
+      router.push({ name: 'Home' });
+      proxy.$message.success('已退出');
+    };
 
     const navigateToHome = () => {
-      router.push({ name: 'Home' })
-    }
+      router.push({ name: 'Home' });
+    };
 
     return {
       userForm,
-      handleAvatarSuccess,
       beforeAvatarUpload,
+      handleAvatarSuccess,
+      handleAvatarError,
+      getFormData,
+      uploadHeaders,
       saveChanges,
       logout,
       navigateToHome
-    }
+    };
   }
-})
+});
 </script>
 
 <style scoped>

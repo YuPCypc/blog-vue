@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
+    "@types/ali-oss": "^6.16.11",
     "@types/node": "^20.14.5",
     "@types/three": "^0.167.1",
     "@vitejs/plugin-vue": "^5.0.5",

@@ -13,7 +13,7 @@
       <el-col :span="4" class="align-right">
         <el-button v-if="!isAuthenticated" type="primary" @click="navigateToLogin">登陆</el-button>
         <el-button v-if="!isAuthenticated" @click="navigateToRegister">注册</el-button>
-        <el-avatar v-if="isAuthenticated" :src="user?.avatar" class="clickable-avatar"
+        <el-avatar v-if="isAuthenticated" :src="user?.avatarUri" class="clickable-avatar"
                    @click="navigateToProfile"></el-avatar>
       </el-col>
     </el-row>
