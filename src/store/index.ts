@@ -34,13 +34,11 @@ export default createStore({
         },
         async updateUser({ commit }, updatedUser) {
             try {
-                console.log('Update user:', updatedUser);
                 const response = await axios.post('/update', updatedUser,{
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('jwt')}`
                     }
                 });
-                console.log('Updatelasds user:', updatedUser);
                 commit('setUser', response.data.user);
                 if (response.data.success) {
                     commit('updateUser', updatedUser);

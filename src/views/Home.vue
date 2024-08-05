@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="navbar-container">
-      <Navbar />
+      <Navbar/>
     </div>
     <div class="home-page">
       <el-main>
@@ -12,35 +12,37 @@
                   default-active="1"
                   class="el-menu-vertical-demo"
                   @select="handleMenuSelect">
-                <el-menu-item index="1">最新</el-menu-item>
-                <el-menu-item index="2">后端技术</el-menu-item>
-                <el-menu-item index="3">前端技术</el-menu-item>
-                <el-menu-item index="4">JAVA</el-menu-item>
-                <el-menu-item index="5">PYTHON</el-menu-item>
-                <el-menu-item index="6">GOLANG</el-menu-item>
-                <el-menu-item index="7">VUE</el-menu-item>
-                <el-menu-item index="8">REACT</el-menu-item>
+                <el-menu-item index="1">综合</el-menu-item>
+                <el-menu-item index="2">前端技术</el-menu-item>
+                <el-menu-item index="3">后端技术</el-menu-item>
+                <el-menu-item index="4">人工智能</el-menu-item>
+                <el-menu-item index="5">移动端技术</el-menu-item>
+                <el-menu-item index="6">底层技术</el-menu-item>
               </el-menu>
             </el-card>
           </el-col>
           <el-col :span="12">
             <el-card v-for="post in posts" :key="post.id" class="post-card">
               <h3 @click="navigateToPost(post.id)" class="clickable">{{ post.title }}</h3>
-              <p @click="navigateToPost(post.id)" class="clickable">{{ post.content }}</p>
+              <p @click="navigateToPost(post.id)" class="clickable">{{ post.summary }}</p>
               <div class="post-footer">
-                <router-link :to="`/user/${post.userId}`" class="user-link">{{ post.userName }}</router-link>
-                <span>浏览量: {{ post.views }}</span>
-                <el-button @click="toggleFavorite" type="primary">
+                <div class="post-info">
+                  <el-avatar :src="post.userRespVO.avatarUri" class="clickable-avatar-inner"
+                             @click="navigateToProfile"></el-avatar>
+                  <el-link :underline="false" :to="'/user/' + post.authorId" class="user-link">{{ post.userRespVO.nickname }}</el-link>
+                </div>
+                <span>浏览量: {{ post.viewCount }}</span>
+                <el-button @click="toggleFavorite(post.id)" type="primary">
                   <el-icon>
-                    <component :is="isFavorited ? 'StarFilled' : 'Star'" />
+                    <component :is="post.liked ? 'StarFilled' : 'Star'"/>
                   </el-icon>
-                  {{ isFavorited ? '已收藏' : '收藏' }}
+                  {{ post.liked ? '已收藏' : '收藏' }}
                 </el-button>
                 <el-button @click="navigateToPost(post.id)" type="primary">
                   <el-icon>
-                    <Comment />
+                    <Comment/>
                   </el-icon>
-                  {{'评论'}}
+                  评论
                 </el-button>
               </div>
             </el-card>
@@ -62,80 +64,86 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import {defineComponent, reactive, ref, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
 import Navbar from '@/components/Navbar.vue'
-import { Star, StarFilled } from '@element-plus/icons-vue'
-import axios from 'axios'
+import {Star, StarFilled} from '@element-plus/icons-vue'
+import axios from "@/axios";
+import {ArticleRespDTO} from '@/models/ArticleRespDTO' // 根据实际路径调整
 
 export default defineComponent({
   name: 'Home',
   components: {
     Navbar,
     Star,
-    StarFilled
+    StarFilled,
   },
   setup() {
     const router = useRouter()
 
-    const posts = reactive(Array.from({ length: 20 }, (_, i) => ({
-      id: i + 1,
-      title: `Post ${i + 1}`,
-      content: `This is the content of post ${i + 1}`,
-      userId: i % 3 + 1,
-      userName: `User ${i % 3 + 1}`,
-      views: Math.floor(Math.random() * 1000),
-      liked: false
-    })))
-
+    const posts = reactive<ArticleRespDTO[]>([])
     const recommendedUsers = [
-      { id: 1, name: 'User 1' },
-      { id: 2, name: 'User 2' },
-      { id: 3, name: 'User 3' }
+      {id: 1, name: 'User 1'},
+      {id: 2, name: 'User 2'},
+      {id: 3, name: 'User 3'}
     ]
 
     const handleMenuSelect = (index: string) => {
-      console.log('Selected menu item:', index)
-      // 根据选择的菜单项加载不同的帖子内容
-      // 这里可以根据实际需求发起请求获取对应分类的帖子
+      const categoryId = parseInt(index) // 将选择的索引转为数字，假设索引对应类别 ID
+      fetchPosts(categoryId)
     }
 
     const navigateToPost = (postId: number) => {
-      router.push({ name: 'PostDetail', params: { id: postId } })
+      router.push({name: 'PostDetail', params: {id: postId}})
     }
 
-    const toggleLike = (post: any) => {
-      post.liked = !post.liked
-      if (post.liked) {
-        post.views += 1
-      } else {
-        post.views -= 1
+    const navigateToProfile = () => {
+      // TODO: 跳转到其他用户详情页
+    }
+
+    const toggleFavorite = async (postId: number) => {
+      const post = posts.find(p => p.id === postId)
+      if (post) {
+        post.liked = !post.liked
+        try {
+          await axios.post('/api/favorite', {id: postId, liked: post.liked})
+          console.log('Favorite status updated')
+        } catch (error) {
+          console.error('Error updating favorite status:', error)
+        }
       }
     }
 
-    const isFavorited = ref(false)
-
-    const toggleFavorite = async () => {
-      isFavorited.value = !isFavorited.value
+    const fetchPosts = async (categoryId: number) => {
       try {
-        const response = await axios.post('/api/favorite', {
-          isFavorited: isFavorited.value
-        })
-        console.log('Response from server:', response.data)
+        const response = await axios.post('/api/post/list', {
+              categoryId: categoryId,
+              page: 1,
+              pageSize: 10
+            }, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+              }
+            }
+        )
+        console.log('Fetched posts:', response)
+        posts.splice(0, posts.length, ...response.data.data)
       } catch (error) {
-        console.error('Error sending data to server:', error)
+        console.error('Error fetching posts:', error)
       }
     }
 
+    onMounted(() => {
+      fetchPosts(1)
+    })
 
     return {
       posts,
       recommendedUsers,
-      isFavorited,
       handleMenuSelect,
       navigateToPost,
-      toggleLike,
       toggleFavorite,
+      navigateToProfile,
     }
   }
 })
@@ -176,6 +184,10 @@ export default defineComponent({
 
 .clickable:hover {
   color: #787b7e;
+}
+
+.clickable-avatar-inner:hover {
+  cursor: pointer;
 }
 
 .post-footer {

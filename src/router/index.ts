@@ -5,6 +5,7 @@ import Post from '../views/Post.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Profile from '@/views/Profile.vue'
+import Article from '@/views/Article.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -37,6 +38,11 @@ const routes: Array<RouteRecordRaw> = [
         path: '/profile',
         name: 'Profile',
         component: Profile
+    },
+    {
+        path: '/article',
+        name: 'Article',
+        component: Article
     }
 ]
 

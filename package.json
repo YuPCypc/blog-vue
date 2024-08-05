@@ -11,10 +11,17 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@bytemd/plugin-gfm": "^1.21.0",
+    "@bytemd/plugin-highlight": "^1.21.0",
+    "@bytemd/plugin-highlight-ssr": "^1.21.0",
+    "@bytemd/vue-next": "^1.21.0",
     "@element-plus/icons-vue": "^2.3.1",
     "ali-oss": "^6.20.0",
     "axios": "^1.7.2",
+    "bytemd": "^1.21.0",
     "element-plus": "^2.7.8",
+    "highlight.js": "^11.10.0",
+    "juejin-markdown-themes": "^1.34.0",
     "three": "^0.167.0",
     "vue": "^3.4.29",
     "vue-router": "^4.4.0",
@@ -31,5 +38,10 @@
     "typescript": "~5.4.0",
     "vite": "^5.3.1",
     "vue-tsc": "^2.0.21"
-  }
+  },
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
