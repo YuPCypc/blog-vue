@@ -1,0 +1,82 @@
+.wrap {
+    /* 背景色 */
+    background: #292c30 !important;
+    color: #fff !important;
+    border: 1px solid #a1a0a0 !important;
+    /* 圆角 */
+    border-radius: 10px !important;
+    /* 阴影 */
+    box-shadow: 0px 2px 15px #8e959e !important;
+    padding: 0 !important;
+}
+
+/* 隐藏三角箭头 */
+.wrap .el-popper__arrow {
+    display: none !important;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    height: 200px; /* 或其他适合的高度 */
+    overflow: hidden; /* 防止内容溢出 */
+    border-radius: 8px; /* 可选，添加圆角 */
+}
+
+.card-header {
+    background-image: url('./../assets/default_card_background.jpg');
+    background-size: cover;
+    background-position: center top; /* 确保背景图片顶部对齐 */
+    height: 60px; /* 设置背景图片区域的高度，根据需要调整 */
+    position: relative; /* 用于覆盖内容 */
+}
+
+.card-body {
+    background: #ede9e9; /* 内容区域背景色，与背景图片区分开 */
+    color: #000; /* 内容文字颜色 */
+    height: 70%;
+}
+.card-body-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 确保最左边的元素在左侧 */
+}
+.center-content {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* 控制昵称和按钮之间的间距 */
+    flex: 1;
+
+}
+
+.center-content-nickname {
+    width: 50%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+.card-body-sign{
+    font-size: 12px;
+    color: #787b7e;
+    margin-left: 10px;
+}
+.card-footer {
+    background: #000; /* 内容区域背景色，与背景图片区分开 */
+    color: #fff; /* 内容文字颜色 */
+    height: 40%;
+}
+
+.card-footer-bottom {
+    display: flex;
+    justify-content: center; /* 水平居中对齐所有子元素 */
+    align-items: center; /* 垂直居中对齐所有子元素 */
+    gap: 20px; /* 控制各项之间的间距 */
+    padding: 10px; /* 添加一些内边距 */
+}
+
+
+.clickable-avatar-inner:hover {
+    cursor: pointer;
+}

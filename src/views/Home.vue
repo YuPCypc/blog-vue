@@ -1,8 +1,8 @@
 <template>
-  <div>
-    <div class="navbar-container">
-      <Navbar/>
-    </div>
+  <div class="navbar-container">
+    <Navbar/>
+  </div>
+  <div class="scroll-container" @scroll="handleScroll" ref="scrollContainer">
     <div class="home-page">
       <el-main>
         <el-row :gutter="20">
@@ -27,9 +27,10 @@
               <p @click="navigateToPost(post.id)" class="clickable">{{ post.summary }}</p>
               <div class="post-footer">
                 <div class="post-info">
-                  <el-avatar :src="post.userRespVO.avatarUri" class="clickable-avatar-inner"
-                             @click="navigateToProfile"></el-avatar>
-                  <el-link :underline="false" :to="'/user/' + post.authorId" class="user-link">{{ post.userRespVO.nickname }}</el-link>
+                  <UserCard :user="post.userRespVO"></UserCard>
+                  <el-link :underline="false" :to="'/user/' + post.authorId" class="user-link">
+                    {{ post.userRespVO.nickname }}
+                  </el-link>
                 </div>
                 <span>浏览量: {{ post.viewCount }}</span>
                 <el-button @click="toggleFavorite(post.id)" type="primary">
@@ -64,12 +65,13 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, reactive, ref, onMounted} from 'vue'
-import {useRouter} from 'vue-router'
-import Navbar from '@/components/Navbar.vue'
-import {Star, StarFilled} from '@element-plus/icons-vue'
+import {defineComponent, reactive, ref, onMounted} from 'vue';
+import {useRouter} from 'vue-router';
+import Navbar from '@/components/Navbar.vue';
+import {Star, StarFilled} from '@element-plus/icons-vue';
 import axios from "@/axios";
-import {ArticleRespDTO} from '@/models/ArticleRespDTO' // 根据实际路径调整
+import {ArticleRespDTO} from '@/models/ArticleRespDTO';
+import UserCard from "@/components/UserCard.vue";
 
 export default defineComponent({
   name: 'Home',
@@ -77,65 +79,83 @@ export default defineComponent({
     Navbar,
     Star,
     StarFilled,
+    UserCard,
   },
   setup() {
-    const router = useRouter()
-
-    const posts = reactive<ArticleRespDTO[]>([])
+    const router = useRouter();
+    const posts = reactive<ArticleRespDTO[]>([]);
+    let categoryId= ref(1);
     const recommendedUsers = [
       {id: 1, name: 'User 1'},
       {id: 2, name: 'User 2'},
       {id: 3, name: 'User 3'}
-    ]
+    ];
+    const currentPage = ref(1);
+    const isFetching = ref(false);
+    const scrollContainer = ref<HTMLElement | null>(null);
 
     const handleMenuSelect = (index: string) => {
-      const categoryId = parseInt(index) // 将选择的索引转为数字，假设索引对应类别 ID
-      fetchPosts(categoryId)
-    }
+      categoryId.value = parseInt(index);
+      fetchPosts(categoryId.value, 1);
+      currentPage.value = 1;
+    };
 
     const navigateToPost = (postId: number) => {
-      router.push({name: 'PostDetail', params: {id: postId}})
-    }
-
-    const navigateToProfile = () => {
-      // TODO: 跳转到其他用户详情页
-    }
+      router.push({name: 'PostDetail', params: {id: postId}});
+    };
 
     const toggleFavorite = async (postId: number) => {
-      const post = posts.find(p => p.id === postId)
+      const post = posts.find(p => p.id === postId);
       if (post) {
-        post.liked = !post.liked
+        post.liked = !post.liked;
         try {
-          await axios.post('/api/favorite', {id: postId, liked: post.liked})
-          console.log('Favorite status updated')
+          await axios.post('/api/favorite', {id: postId, liked: post.liked});
+          console.log('Favorite status updated');
         } catch (error) {
-          console.error('Error updating favorite status:', error)
+          console.error('Error updating favorite status:', error);
         }
       }
-    }
+    };
 
-    const fetchPosts = async (categoryId: number) => {
+    const fetchPosts = async (categoryId: number, page: number) => {
       try {
+        if (isFetching.value) return;
+        isFetching.value = true;
         const response = await axios.post('/api/post/list', {
-              categoryId: categoryId,
-              page: 1,
-              pageSize: 10
-            }, {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('jwt')}`
-              }
-            }
-        )
-        console.log('Fetched posts:', response)
-        posts.splice(0, posts.length, ...response.data.data)
+          categoryId: categoryId,
+          currentPage: page,
+          pageSize: 5,
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          }
+        });
+        if (page === 1) {
+          posts.splice(0, posts.length, ...response.data.data.records);
+        } else {
+          posts.push(...response.data.data.records);
+        }
+        isFetching.value = false;
       } catch (error) {
-        console.error('Error fetching posts:', error)
+        console.error('Error fetching posts:', error);
+        isFetching.value = false;
       }
-    }
+    };
+
+    const handleScroll = () => {
+      const container = scrollContainer.value;
+      if (container) {
+        const {scrollTop, scrollHeight, clientHeight} = container;
+        if (scrollTop + clientHeight >= scrollHeight - 10) {
+          currentPage.value += 1;
+          fetchPosts(categoryId.value, currentPage.value);
+        }
+      }
+    };
 
     onMounted(() => {
-      fetchPosts(1)
-    })
+      fetchPosts(1, 1);
+    });
 
     return {
       posts,
@@ -143,34 +163,48 @@ export default defineComponent({
       handleMenuSelect,
       navigateToPost,
       toggleFavorite,
-      navigateToProfile,
-    }
+      handleScroll,
+      scrollContainer,
+    };
   }
-})
+});
 </script>
 
 <style scoped>
+
+body {
+  margin: 0;
+  overflow: hidden; /* 禁止 body 滚动 */
+}
+
 .navbar-container {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #ffffff; /* 背景颜色为白色 */
-  border-bottom: 1px solid #dcdfe6; /* 底部边框 */
+  background-color: #ffffff;
+  border-bottom: 1px solid #dcdfe6;
   width: 100%;
 }
 
+.scroll-container {
+  height: calc(100vh - 56px); /* 设置容器高度，减去导航栏高度 */
+  overflow-y: auto; /* 允许垂直滚动 */
+  margin: 0;
+  padding: 0;
+}
+
 .home-page {
-  background-color: #f0f0f0; /* 设置背景颜色为浅灰色 */
-  min-height: 100vh; /* 设置最小高度为 100% 视口高度 */
-  padding: 20px; /* 添加一些内边距 */
+  background-color: #f0f0f0;
+  min-height: 100vh;
+
 }
 
 .fixed-sidebar {
   position: sticky;
   top: 20px;
-  background-color: #ffffff; /* 自定义背景色 */
-  border: 1px solid #dcdfe6; /* 边框颜色 */
-  padding: 20px; /* 内边距 */
+  background-color: #ffffff;
+  border: 1px solid #dcdfe6;
+  padding: 20px;
 }
 
 .post-card {
