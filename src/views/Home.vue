@@ -26,8 +26,8 @@
               <h3 @click="navigateToPost(post.id)" class="clickable">{{ post.title }}</h3>
               <p @click="navigateToPost(post.id)" class="clickable">{{ post.summary }}</p>
               <div class="post-footer">
-                <div class="post-info">
-                  <UserCard :user="post.userRespVO"></UserCard>
+                <div class="post-viewer-info">
+                  <UserCard :user="post.userRespVO" class="post-viewer-info-left"></UserCard>
                   <el-link :underline="false" :to="'/user/' + post.authorId" class="user-link">
                     {{ post.userRespVO.nickname }}
                   </el-link>
@@ -35,9 +35,9 @@
                 <span>浏览量: {{ post.viewCount }}</span>
                 <el-button @click="toggleFavorite(post.id)" type="primary">
                   <el-icon>
-                    <component :is="post.liked ? 'StarFilled' : 'Star'"/>
+                    <component :is="post.likeCount ? 'StarFilled' : 'Star'"/>
                   </el-icon>
-                  {{ post.liked ? '已收藏' : '收藏' }}
+                  {{ post.likeCount ? '已收藏' : '收藏' }}
                 </el-button>
                 <el-button @click="navigateToPost(post.id)" type="primary">
                   <el-icon>
@@ -100,16 +100,16 @@ export default defineComponent({
       currentPage.value = 1;
     };
 
-    const navigateToPost = (postId: number) => {
-      router.push({name: 'PostDetail', params: {id: postId}});
+    const navigateToPost = (postId: string) => {
+      router.push({name: 'ArticleViewer', params: {id: postId}});
     };
 
-    const toggleFavorite = async (postId: number) => {
+    const toggleFavorite = async (postId: string) => {
       const post = posts.find(p => p.id === postId);
       if (post) {
-        post.liked = !post.liked;
+        post.likeCount = !post.likeCount;
         try {
-          await axios.post('/api/favorite', {id: postId, liked: post.liked});
+          await axios.post('/api/favorite', {id: postId, liked: post.likeCount});
           console.log('Favorite status updated');
         } catch (error) {
           console.error('Error updating favorite status:', error);
@@ -130,6 +130,7 @@ export default defineComponent({
             'Authorization': `Bearer ${localStorage.getItem('jwt')}`
           }
         });
+        console.log(response);
         if (page === 1) {
           posts.splice(0, posts.length, ...response.data.data.records);
         } else {
@@ -172,8 +173,15 @@ export default defineComponent({
 
 <style scoped>
 
+html{
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
 body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   overflow: hidden; /* 禁止 body 滚动 */
 }
 
@@ -247,5 +255,13 @@ body {
 
 .like:hover {
   color: #007bff;
+}
+
+.post-viewer-info {
+  display: flex;
+  padding: 10px; /* 内边距 */
+}
+.post-viewer-info-left {
+  margin-right: 10px;
 }
 </style>

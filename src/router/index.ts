@@ -6,6 +6,7 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Profile from '@/views/Profile.vue'
 import Article from '@/views/Article.vue'
+import MDViewer from '@/views/MDViewer.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -43,6 +44,11 @@ const routes: Array<RouteRecordRaw> = [
         path: '/article',
         name: 'Article',
         component: Article
+    },
+    {
+        path: '/article/:id',
+        name: 'ArticleViewer',
+        component: MDViewer
     }
 ]
 

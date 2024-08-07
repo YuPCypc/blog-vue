@@ -37,7 +37,7 @@
   </div>
   <div>
     <Editor :value="content" :plugins="plugins" @change="handleChange"
-            :locale="locale" :uploadImages="uploadImage" class="editor-container"
+            :locale="locale" :uploadImages="uploadImages" class="editor-container"
     />
     <el-button @click="handleSubmit" type="primary" class="editor-button-container">发布</el-button>
   </div>
@@ -132,12 +132,25 @@ export default defineComponent({
         console.error('发布失败:', error);
       }
     };
-    const uploadImage = async (file: File) => {
-      console.log('files', file)
+    const uploadImages = async (files: File[]): Promise<{ url: string }[]> => {
+      const formData = new FormData();
+      files.forEach(file => formData.append('file', file));
 
-      return []
-
-    }
+      try {
+        const response = await axios.post('/api/upload-file', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          }
+        });
+        console.log(response);
+        // 假设你的 API 返回的结构是 { urls: [ 'image-url-1', 'image-url-2', ... ] }
+        return [{ url: response.data.picUrl }];
+      } catch (error) {
+        console.error('Failed to upload images:', error);
+        return [];
+      }
+    };
 
     return {
       content,
@@ -145,7 +158,7 @@ export default defineComponent({
       handleChange,
       handleSubmit,
       locale,
-      uploadImage,
+      uploadImages,
       title,
       options,
       category_value,
