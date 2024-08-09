@@ -9,10 +9,11 @@ import axios from '@/axios'; // 确保你已正确配置 axios
 import 'juejin-markdown-themes/dist/juejin.min.css';
 import "bytemd/dist/index.css";
 import "highlight.js/styles/default.css";
-import {ElCard, ElRow, ElCol, ElDivider} from 'element-plus';
+import {ElCard, ElRow, ElCol, ElDivider, ElMessage} from 'element-plus';
 import Navbar from "@/components/Navbar.vue";
 import {ArticleDetailRespDTO, ArticleRespDTO} from '@/models/ArticleRespDTO';
 import UserCard from "@/components/UserCard.vue";
+
 
 export default defineComponent({
   name: 'MDViewer',
@@ -28,6 +29,8 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const id = route.params.id as string;
+    const isLiked = ref(false);
+    const isFavorite = ref(false);
 
     const articleData = reactive<ArticleDetailRespDTO>({
       id: '',
@@ -63,7 +66,8 @@ export default defineComponent({
             'Authorization': `Bearer ${localStorage.getItem('jwt')}`
           }
         }); // 替换成你的实际 API 路径
-        console.log(response);
+        console.log(response.data);
+        articleData.id = id; // 假设返回的数据结构为 { id: '...' }
         articleData.content = response.data.data.content; // 假设返回的数据结构为 { content: '...' }
         articleData.title = response.data.data.title; // 假设返回的数据结构为 { title: '...' }
         articleData.userRespVO.nickname = response.data.data.userRespVO.nickname; // 假设返回的数据结构为 { author: '...' }
@@ -74,8 +78,23 @@ export default defineComponent({
         articleData.viewCount = response.data.data.viewCount;
         articleData.favoriteCount = response.data.data.favoriteCount;
         articleData.categoryId = response.data.data.categoryId;
+        if(response.data.data.hasThumb) {
+          isLiked.value = true;
+        }
+        if(response.data.data.hasFavour) {
+          isFavorite.value = true;
+        }
       } catch (error) {
         console.error('Failed to fetch article:', error);
+      }
+      try {
+        const response = await axios.put(`/api/post/${id}/view`, null,{
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+          }
+        }); // 替换成你的实际 API 路径
+      } catch (error) {
+        console.error('Failed to increment ViewCount:', error);
       }
     };
 
@@ -130,9 +149,55 @@ export default defineComponent({
       }
     });
 
+    const showMessage = async (action: string, postId: string) => {
+      console.log( postId);
+      try {
+        if (action === '点赞') {
+          await toggleLike(postId);
+          isLiked.value = !isLiked.value;
+        } else if (action === '收藏') {
+          await toggleFavorite(postId);
+          isFavorite.value = !isFavorite.value;
+        }
+
+        const actionText = isLiked.value || isFavorite.value ? `${action}成功` : `取消${action}成功`;
+        ElMessage({
+          message: actionText,
+          type: 'success',
+          duration: 2000,
+        });
+      } catch (error) {
+        ElMessage({
+          message: `${action}失败，请重试`,
+          type: 'error',
+          duration: 2000,
+        });
+      }
+    };
+
+    const toggleLike = async (postId: string) => {
+      console.log(postId);
+      await axios.put(`/api/post/${postId}/like`,null,{
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      });
+    };
+
+    const toggleFavorite = async (postId: string) => {
+      await axios.put(`/api/post/${postId}/collect`,null,{
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        }
+      });
+    };
+
     return {
       plugins,
       articleData,
+      showMessage,
+      isLiked,
+      isFavorite
     };
   },
 });
@@ -172,6 +237,23 @@ export default defineComponent({
         <el-col :span="24">
           <Viewer :value="articleData.content" :plugins="plugins" class="viewer-container"/>
         </el-col>
+        <el-divider></el-divider>
+        <el-row :gutter="20" style="margin-top: 10px;">
+          <el-col :span="12">
+            <el-button type="primary"  @click="showMessage('点赞',articleData.id)" circle>
+              <font-awesome-icon :icon="isLiked ? ['fas', 'thumbs-up'] : ['far', 'thumbs-up']"
+                                 class="text-blue-500"
+                                 style="font-size: 15px;" />
+            </el-button>
+          </el-col>
+          <el-col :span="12">
+            <el-button type="warning"  @click="showMessage('收藏',articleData.id)" circle>
+              <el-icon>
+                <component :is="isFavorite ? 'StarFilled' : 'Star'"/>
+              </el-icon>
+            </el-button>
+          </el-col>
+        </el-row>
       </el-row>
     </el-card>
   </div>
@@ -191,7 +273,7 @@ html, body {
   align-items: center;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #c6c6c6;
+  background: #e8e8e8;
 }
 
 .article-viewer {
@@ -204,14 +286,16 @@ html, body {
   margin-top: 20px;
 }
 
-.article-read-info{
+.article-read-info {
   font-size: 14px;
   color: #909399;
 }
+
 .post-viewer-info {
   display: flex;
   padding: 10px; /* 内边距 */
 }
+
 .post-viewer-info-left {
   margin-right: 10px;
 }

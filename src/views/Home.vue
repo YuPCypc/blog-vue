@@ -110,7 +110,6 @@ export default defineComponent({
         post.likeCount = !post.likeCount;
         try {
           await axios.post('/api/favorite', {id: postId, liked: post.likeCount});
-          console.log('Favorite status updated');
         } catch (error) {
           console.error('Error updating favorite status:', error);
         }
@@ -130,7 +129,6 @@ export default defineComponent({
             'Authorization': `Bearer ${localStorage.getItem('jwt')}`
           }
         });
-        console.log(response);
         if (page === 1) {
           posts.splice(0, posts.length, ...response.data.data.records);
         } else {
