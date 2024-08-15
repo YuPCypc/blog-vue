@@ -30,3 +30,16 @@ export interface ArticleDetailRespDTO{
     favoriteCount: number;
     updateTime: string;
 }
+
+export interface CommentRespDTO {
+    id: string;
+    articleId: string;
+    userRespVO: UserRespVO;
+    content: string;
+    commentLikeCount: number;
+    replyCommentCount: number;
+    createdAt: string;
+    rootCommentId?: string;
+    replyCommentId?: string;
+    subComments?: CommentRespDTO[];
+}
